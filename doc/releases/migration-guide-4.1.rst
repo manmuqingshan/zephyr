@@ -80,12 +80,10 @@ LVGL
 Device Drivers and Devicetree
 *****************************
 
-* Device driver APIs are placed into iterable sections (:github:`71773`) to allow for runtime
-  checking. See :ref:`device_driver_api` for more details.
+* Device driver APIs are placed into iterable sections (:github:`71773` and :github:`82102`) to
+  allow for runtime checking. See :ref:`device_driver_api` for more details.
   The :c:macro:`DEVICE_API()` macro should be used by out-of-tree driver implementations for
-  the following driver classes:
-
-    * :c:struct:`adc_driver_api`
+  all the upstream driver classes.
 
 * The :c:func:`video_buffer_alloc` and :c:func:`video_buffer_aligned_alloc` functions in the
   video API now take an additional timeout parameter.
@@ -206,6 +204,8 @@ Stepper
   * Renamed the ``stepper_enable_constant_velocity_mode`` function to :c:func:`stepper_run`.
   * Renamed the ``stepper_move`` function to :c:func:`stepper_move_by`.
   * Renamed the ``stepper_set_target_position`` function to :c:func:`stepper_move_to`.
+  * The :kconfig:option:`STEPPER_ADI_TMC_RAMP_GEN` is now deprecated and is replaced with the new
+    :kconfig:option:`STEPPER_ADI_TMC5041_RAMP_GEN` option.
 
 SPI
 ===
@@ -215,6 +215,11 @@ SPI
 
 Regulator
 =========
+
+RTC
+===
+
+* Renamed the ``compatible`` from ``nxp,kinetis-rtc`` to :dtcompatible:`nxp,rtc`.
 
 Video
 =====
@@ -229,7 +234,15 @@ Video
 Watchdog
 ========
 
+Wi-Fi
+=====
+
 * Renamed the ``compatible`` from ``nxp,kinetis-wdog32`` to :dtcompatible:`nxp,wdog32`.
+
+* The config options :kconfig:option:`CONFIG_NXP_WIFI_BUILD_ONLY_MODE` and
+  :kconfig:option:`CONFIG_NRF_WIFI_BUILD_ONLY_MODE` are now unified under
+  :kconfig:option:`CONFIG_BUILD_ONLY_NO_BLOBS` making it a common entry point
+  for any vendor to enable builds without blobs.
 
 Bluetooth
 *********

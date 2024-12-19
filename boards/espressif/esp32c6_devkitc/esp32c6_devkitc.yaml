@@ -12,8 +12,8 @@ supported:
   - dma
   - spi
   - entropy
+  - i2c
 testing:
   ignore_tags:
-    - net
     - bluetooth
     - tracing

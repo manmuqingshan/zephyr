@@ -20,5 +20,8 @@ supported:
   - gpio
   - counter
   - dac
+  - i2c
   - pwm
+  - usb_device
+  - usbd
 vendor: nxp

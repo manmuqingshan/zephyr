@@ -542,8 +542,6 @@ __syscall int k_thread_join(struct k_thread *thread, k_timeout_t timeout);
  * This routine puts the current thread to sleep for @a duration,
  * specified as a k_timeout_t object.
  *
- * @note if @a timeout is set to K_FOREVER then the thread is suspended.
- *
  * @param timeout Desired duration of sleep.
  *
  * @return Zero if the requested time has elapsed or if the thread was woken up
@@ -1024,10 +1022,11 @@ int k_thread_cpu_pin(k_tid_t thread, int cpu);
  * This routine prevents the kernel scheduler from making @a thread
  * the current thread. All other internal operations on @a thread are
  * still performed; for example, kernel objects it is waiting on are
- * still handed to it.  Note that any existing timeouts
- * (e.g. k_sleep(), or a timeout argument to k_sem_take() et. al.)
- * will be canceled.  On resume, the thread will begin running
- * immediately and return from the blocked call.
+ * still handed to it. Thread suspension does not impact any timeout
+ * upon which the thread may be waiting (such as a timeout from a call
+ * to k_sem_take() or k_sleep()). Thus if the timeout expires while the
+ * thread is suspended, it is still suspended until k_thread_resume()
+ * is called.
  *
  * When the target thread is active on another CPU, the caller will block until
  * the target thread is halted (suspended or aborted).  But if the caller is in
@@ -1043,8 +1042,9 @@ __syscall void k_thread_suspend(k_tid_t thread);
 /**
  * @brief Resume a suspended thread.
  *
- * This routine allows the kernel scheduler to make @a thread the current
- * thread, when it is next eligible for that role.
+ * This routine reverses the thread suspension from k_thread_suspend()
+ * and allows the kernel scheduler to make @a thread the current thread
+ * when it is next eligible for that role.
  *
  * If @a thread is not currently suspended, the routine has no effect.
  *
@@ -1060,14 +1060,14 @@ __syscall void k_thread_resume(k_tid_t thread);
  * on it.
  *
  * @note This is a legacy API for compatibility.  Modern Zephyr
- * threads are initialized in the "suspended" state and no not need
+ * threads are initialized in the "sleeping" state and do not need
  * special handling for "start".
  *
  * @param thread thread to start
  */
 static inline void k_thread_start(k_tid_t thread)
 {
-	k_thread_resume(thread);
+	k_wakeup(thread);
 }
 
 /**
@@ -2544,9 +2544,10 @@ struct k_fifo {
  */
 #define k_fifo_put(fifo, data) \
 	({ \
-	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_fifo, put, fifo, data); \
-	k_queue_append(&(fifo)->_queue, data); \
-	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_fifo, put, fifo, data); \
+	void *_data = data; \
+	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_fifo, put, fifo, _data); \
+	k_queue_append(&(fifo)->_queue, _data); \
+	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_fifo, put, fifo, _data); \
 	})
 
 /**
@@ -2567,9 +2568,10 @@ struct k_fifo {
  */
 #define k_fifo_alloc_put(fifo, data) \
 	({ \
-	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_fifo, alloc_put, fifo, data); \
-	int fap_ret = k_queue_alloc_append(&(fifo)->_queue, data); \
-	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_fifo, alloc_put, fifo, data, fap_ret); \
+	void *_data = data; \
+	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_fifo, alloc_put, fifo, _data); \
+	int fap_ret = k_queue_alloc_append(&(fifo)->_queue, _data); \
+	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_fifo, alloc_put, fifo, _data, fap_ret); \
 	fap_ret; \
 	})
 
@@ -2766,9 +2768,10 @@ struct k_lifo {
  */
 #define k_lifo_put(lifo, data) \
 	({ \
-	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_lifo, put, lifo, data); \
-	k_queue_prepend(&(lifo)->_queue, data); \
-	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_lifo, put, lifo, data); \
+	void *_data = data; \
+	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_lifo, put, lifo, _data); \
+	k_queue_prepend(&(lifo)->_queue, _data); \
+	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_lifo, put, lifo, _data); \
 	})
 
 /**
@@ -2789,9 +2792,10 @@ struct k_lifo {
  */
 #define k_lifo_alloc_put(lifo, data) \
 	({ \
-	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_lifo, alloc_put, lifo, data); \
-	int lap_ret = k_queue_alloc_prepend(&(lifo)->_queue, data); \
-	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_lifo, alloc_put, lifo, data, lap_ret); \
+	void *_data = data; \
+	SYS_PORT_TRACING_OBJ_FUNC_ENTER(k_lifo, alloc_put, lifo, _data); \
+	int lap_ret = k_queue_alloc_prepend(&(lifo)->_queue, _data); \
+	SYS_PORT_TRACING_OBJ_FUNC_EXIT(k_lifo, alloc_put, lifo, _data, lap_ret); \
 	lap_ret; \
 	})
 

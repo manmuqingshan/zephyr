@@ -100,6 +100,10 @@ The below features are currently supported on Zephyr OS for EK-RA4E2 board:
 +-----------+------------+----------------------+
 | SPI       | on-chip    | spi                  |
 +-----------+------------+----------------------+
+| ADC       | on-chip    | adc                  |
++-----------+------------+----------------------+
+| PWM       | on-chip    | pwm                  |
++-----------+------------+----------------------+
 
 Other hardware features are currently not supported by the port.
 
